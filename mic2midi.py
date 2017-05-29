@@ -19,9 +19,11 @@ INPUT_INDEX = 2
 #    def convert_input_to_midi(self):
     
 def callback(in_data, frame_count, time_info, status_flags):
-    global b,a,fulldata,dry_data,frames
+    global fulldata
     audio_data = numpy.fromstring(in_data, dtype=numpy.float32)
-    dry_data = numpy.append(dry_data,audio_data)
+
+    amplitude = numpy.sqrt(numpy.mean(audio_data))
+    print amplitude
 
     fulldata = numpy.append(fulldata,audio_data)
 
@@ -39,7 +41,6 @@ if __name__ == "__main__":
 
     audio = pyaudio.PyAudio()
     fulldata = numpy.array([])
-    dry_data = numpy.array([])
 
     stream = audio.open(format=pyaudio.paFloat32,
                 channels=CHANNELS,
