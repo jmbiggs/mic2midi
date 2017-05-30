@@ -10,6 +10,8 @@ from mido import Message
 CHANNELS = 1
 RATE = 44100
 INPUT_INDEX = 2
+THRESHOLD = 0.05
+NOTE = 48
 
 #class MidiConverter:
 #    current_note = 48
@@ -22,8 +24,9 @@ def callback(in_data, frame_count, time_info, status_flags):
     global fulldata
     audio_data = numpy.fromstring(in_data, dtype=numpy.float32)
 
-    amplitude = numpy.sqrt(numpy.mean(audio_data))
-    print amplitude
+#    amplitude = numpy.sqrt(numpy.mean(audio_data))
+    amplitude = numpy.abs(numpy.mean(audio_data))
+    print amplitude > THRESHOLD
 
     fulldata = numpy.append(fulldata,audio_data)
 
