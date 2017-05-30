@@ -13,17 +13,19 @@ THRESHOLD = 0.05
 NOTE = 48
 
 # global variables
-note_is_on = False
-signal_is_over_threshold = False
-port = None
-audio = None
-stream = None
+#note_is_on = False
+#signal_is_over_threshold = False
+#port = None
+#audio = None
+#stream = None
     
 def callback(in_data, frame_count, time_info, status_flags):
+    global signal_is_over_threshold
+
     audio_data = numpy.fromstring(in_data, dtype=numpy.float32)
     amplitude = numpy.abs(numpy.mean(audio_data))
     
-    print amplitude > THRESHOLD
+#    print amplitude > THRESHOLD
     if amplitude > THRESHOLD:
         if not signal_is_over_threshold:
             toggle_note_on_off()
@@ -36,6 +38,8 @@ def callback(in_data, frame_count, time_info, status_flags):
     return (None, pyaudio.paContinue)
 
 def toggle_note_on_off():
+    global port, note_is_on
+
     if port.closed:
         print_port()
         note_is_on = False
@@ -48,23 +52,30 @@ def toggle_note_on_off():
         port.send(Message('note_off', note=NOTE))
 
 def open_port():
-    if port.closed:
-        port = mido.open_output('DSI Tetra:DSI Tetra MIDI 1 20:0')
-        print_port()
+    global port
+    port = mido.open_output('DSI Tetra:DSI Tetra MIDI 1 24:0')
+    print_port()
 
 def print_port():
+    global port
     if port.closed:
         print "MIDI port closed"
     else:
         print "MIDI port open, connected to: ", port.name
 
-def exit_gracefully():
+def exit_gracefully(signal, frame):
+    global stream, audio
     stream.stop_stream()
     stream.close()
     audio.terminate()
     sys.exit(0)
 
 if __name__ == "__main__":
+    global audio, stream, note_is_on, signal_is_over_threshold
+
+    note_is_on = False
+    signal_is_over_threshold = False
+
     print "mic2midi running: ctrl+c to exit"
     signal.signal(signal.SIGINT, exit_gracefully)
 
